@@ -1,6 +1,14 @@
 // Store our API endpoint inside queryUrl
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
 
+// Initialize all of the LayerGroups we'll be using
+var layers = {
+  Major: new L.LayerGroup(),
+  Moderate: new L.LayerGroup(),
+  Minor: new L.LayerGroup(),
+  Nominal: new L.LayerGroup(),
+};
+
 // Perform a GET request to the query URL
 d3.json(queryUrl, function(data) {
     // Once we get a response, send the data.features object to the createFeatures function
@@ -70,7 +78,13 @@ d3.json(queryUrl, function(data) {
         37.09, -95.71
       ],
       zoom: 5,
-      layers: [streetmap, earthquakes]
+      //layers: [streetmap, earthquakes]
+      layers: [
+        layers.Major,
+        layers.Moderate,
+        layers.Minor,
+        layers.Nominal,
+      ]
     });
   
     // Create a layer control
@@ -81,23 +95,36 @@ d3.json(queryUrl, function(data) {
     }).addTo(myMap);
   }
 
+// Create a legend to display information about our map
+var info = L.control({
+  position: "bottomright"
+});
 
-// Loop through the cities array and create one marker for each city object
+// When the layer control is added, insert a div with the class of "legend"
+info.onAdd = function() {
+  var div = L.DomUtil.create("div", "legend");
+  return div;
+};
+// Add the info legend to the map
+info.addTo(map);
+
+
+// Loop through the cities array and create one marker for each earthquake object
 for (var i = 0; i < earthquakes.length; i++) {
 
-  // Conditionals for countries points
+  // Conditionals for earthquake properties
   var color = "";
   if (earthquakes[i].features.properties.mag > 3) {
-    color = "yellow";
+    color = "red";
   }
   else if (earthquakes[i].features.properties.mag > 2) {
-    color = "blue";
+    color = "yellow";
   }
   else if (earthquakes[i].features.properties.mag > 1) {
-    color = "green";
+    color = "blue";
   }
   else {
-    color = "red";
+    color = "green";
   }
 
   // Add circles to map
